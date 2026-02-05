@@ -1,0 +1,24 @@
+{
+  "name": "@hexlet/code",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "[![Actions Status](https://github.com/pawelmakarewicz/backend-project-6/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/pawelmakarewicz/backend-project-6/actions)",
+  "main": "./server/plugin.js",
+  "scripts": {
+    "start": "fastify start server/plugin.js -l info -a 0.0.0.0 -p 3000",
+    "lint": "eslint ."
+  },
+  "author": "Me",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^4.10.2",
+    "fastify-cli": "^5.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@stylistic/eslint-plugin": "^5.7.1",
+    "eslint": "^9.39.2",
+    "eslint-plugin-import": "^2.32.0",
+    "globals": "^17.3.0"
+  }
+}
