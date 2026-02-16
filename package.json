@@ -11,8 +11,10 @@
   "author": "Me",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.3.1",
     "fastify": "^4.10.2",
-    "fastify-cli": "^5.1.0"
+    "fastify-cli": "^5.1.0",
+    "pg": "^8.18.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
