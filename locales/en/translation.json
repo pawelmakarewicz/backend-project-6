@@ -1,0 +1,15 @@
+{
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "pricing": "Pricing",
+    "faqs": "FAQs",
+    "about": "About",
+    "login": "Login",
+    "signup": "Sign up"
+  },
+  "welcome": {
+    "title": "Welcome to My App",
+    "subtitle": "A simple app built with Fastify, Pug and Bootstrap."
+  }
+}
