@@ -3,10 +3,13 @@ import globals from 'globals'
 import stylistic from '@stylistic/eslint-plugin'
 
 export default [
+  {
+    ignores: ['public/**', 'node_modules/**'],
+  },
   js.configs.recommended,
   stylistic.configs.recommended,
   {
-    files: ['**/*.js'],
+    files: ['server/**/*.js', 'database/**/*.js', 'webpack.config.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -20,6 +23,19 @@ export default [
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
       }],
+    },
+  },
+  {
+    files: ['frontend/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+      },
+    },
+    rules: {
+      'no-console': 'off',
     },
   },
 ]
