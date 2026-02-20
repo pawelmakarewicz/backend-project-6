@@ -1,23 +1,23 @@
+import fastifyView from '@fastify/view'
+import pug from 'pug'
 import pool from './db.js'
+import root from './routes/root.js'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
 
-export default async (app, _) => {
-  app.get('/', async () => {
-    try {
-      const result = await pool.query('SELECT COUNT(*) FROM users')
-      const userCount = parseInt(result.rows[0].count)
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
-      return {
-        message: 'Welcome to Hexlet!',
-        database: 'connected',
-        users: userCount,
-      }
-    }
-    catch (error) {
-      return {
-        message: 'Welcome to Hexlet!',
-        database: 'error',
-        error: error.message,
-      }
-    }
+export default async (app, _options) => {
+  app.decorate('db', pool)
+
+  app.addHook('onClose', async () => {
+    await pool.end()
   })
+
+  await app.register(fastifyView, {
+    engine: { pug },
+    root: join(__dirname, '..', 'views'),
+  })
+
+  app.register(root)
 }
