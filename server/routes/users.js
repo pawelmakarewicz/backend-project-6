@@ -2,18 +2,15 @@ import bcrypt from 'bcrypt'
 import User from '../models/User.js'
 
 export default async (app) => {
-  // GET /users — list all users (public, anyone can see)
   app.get('/users', async (request, reply) => {
     const users = await User.query()
     return reply.view('users/index.pug', { users })
   })
 
-  // GET /users/new — registration form (public)
   app.get('/users/new', async (request, reply) => {
     return reply.view('users/new.pug', { user: {}, errors: {} })
   })
 
-  // POST /users — create a new user (public — this is registration)
   app.post('/users', async (request, reply) => {
     const { data } = request.body
 
@@ -35,10 +32,9 @@ export default async (app) => {
     }
   })
 
-  // GET /users/:id/edit — edit form (only the user themselves)
   app.get('/users/:id/edit', async (request, reply) => {
     // Auth guard: must be logged in AND editing your own account
-    if (!request.currentUser || request.currentUser.id !== Number(request.params.id)) {
+    if (!request.isAuthenticated() || request.user.id !== Number(request.params.id)) {
       return reply.code(403).redirect('/users')
     }
 
@@ -51,7 +47,7 @@ export default async (app) => {
 
   // PATCH /users/:id — update user (only the user themselves)
   app.patch('/users/:id', async (request, reply) => {
-    if (!request.currentUser || request.currentUser.id !== Number(request.params.id)) {
+    if (!request.isAuthenticated() || request.user.id !== Number(request.params.id)) {
       return reply.code(403).redirect('/users')
     }
 
@@ -85,13 +81,12 @@ export default async (app) => {
 
   // DELETE /users/:id — delete user (only the user themselves)
   app.delete('/users/:id', async (request, reply) => {
-    if (!request.currentUser || request.currentUser.id !== Number(request.params.id)) {
+    if (!request.isAuthenticated() || request.user.id !== Number(request.params.id)) {
       return reply.code(403).redirect('/users')
     }
 
     await User.query().deleteById(request.params.id)
-    // After deleting yourself, clear the session (you're no longer logged in)
-    request.session.destroy()
+    await request.logOut()
     return reply.redirect('/users')
   })
 }

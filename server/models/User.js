@@ -1,4 +1,5 @@
 import { Model } from 'objection'
+import bcrypt from 'bcrypt'
 
 export default class User extends Model {
   // Tells Objection which DB table this model maps to
@@ -21,5 +22,10 @@ export default class User extends Model {
         passwordHash: { type: 'string', minLength: 1 },
       },
     }
+  }
+
+  // Returns true if the given plain-text password matches the stored hash
+  async verifyPassword(password) {
+    return bcrypt.compare(password, this.passwordHash)
   }
 }

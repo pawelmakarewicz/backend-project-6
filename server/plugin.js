@@ -4,12 +4,14 @@ import fastifyStatic from '@fastify/static'
 import fastifyFormbody from '@fastify/formbody'
 import fastifyCookie from '@fastify/cookie'
 import fastifySession from '@fastify/session'
+import fastifyPassport from '@fastify/passport'
 import pug from 'pug'
 import Knex from 'knex'
 import { Model } from 'objection'
 import i18next from './i18n.js'
 import knexConfig from '../knexfile.js'
-import User from './models/User.js'
+import models from './models/index.js'
+import FormStrategy from './lib/passportStrategies/FormStrategy.js'
 import root from './routes/root.js'
 import users from './routes/users.js'
 import session from './routes/session.js'
@@ -18,77 +20,102 @@ import { dirname, join } from 'path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-export default async (app, _options) => {
-  // Pick knex config based on NODE_ENV (default: development)
+// --- Database (Knex + Objection) ---
+const setupDatabase = (app) => {
   const env = process.env.NODE_ENV || 'development'
   const knex = Knex(knexConfig[env])
-
   Model.knex(knex)
-
-  // Expose knex on app so tests/helpers can access it via app.objection.knex
-  // This follows the Hexlet boilerplate convention
-  app.decorate('objection', { knex })
-
-  app.decorate('t', i18next.t.bind(i18next))
-
-  await app.register(fastifyStatic, {
-    root: join(__dirname, '..', 'public'),
-    prefix: '/',
-  })
-
-  // Cleanly close the DB connection when the server shuts down
+  // Expose knex and models on app — tests use knex, strategies use models
+  app.decorate('objection', { knex, models })
   app.addHook('onClose', async () => {
     await knex.destroy()
   })
+}
 
-  // Parse application/x-www-form-urlencoded (standard HTML form encoding)
+// --- Fastify plugins (form parsing, cookies, sessions, passport) ---
+const registerPlugins = async (app) => {
   // qs parser supports nested bracket syntax: data[firstName] → { data: { firstName: ... } }
-  // Without it, @fastify/formbody treats "data[firstName]" as a flat string key.
-  await app.register(fastifyFormbody, { parser: (str) => qs.parse(str) })
-
-  // Cookie plugin — required by @fastify/session to store the session ID cookie
+  await app.register(fastifyFormbody, { parser: str => qs.parse(str) })
   await app.register(fastifyCookie)
 
-  // Session plugin — stores session data server-side, sends only a session ID cookie
-  // 'secret' signs the cookie so it can't be tampered with (use env var in production!)
+  const isProduction = process.env.NODE_ENV === 'production'
   await app.register(fastifySession, {
     secret: process.env.SESSION_SECRET || 'a-very-long-secret-key-at-least-32-chars!!',
-    cookie: { secure: false }, // set true in production with HTTPS
+    cookie: { secure: isProduction }, // HTTPS-only in production, HTTP allowed in dev
   })
 
+  // Passport: initialize + connect to session (reads/writes session on each request)
+  await app.register(fastifyPassport.initialize())
+  await app.register(fastifyPassport.secureSession())
+
+  // serializeUser: called once on login — what to save in the session?
+  // We only store the user ID, not the entire user object.
+  fastifyPassport.registerUserSerializer(async user => user.id)
+
+  // deserializeUser: called on every request — given the ID from session, load the full user
+  fastifyPassport.registerUserDeserializer(async (id) => {
+    return app.objection.models.user.query().findById(id)
+  })
+
+  // Register our form-based strategy under the name 'form'
+  fastifyPassport.use('form', new FormStrategy('form', app))
+
+  // Expose passport instance on app so routes can use app.passport.authenticate(...)
+  app.decorate('passport', fastifyPassport)
+}
+
+const setUpViews = (app) => {
+  app.register(fastifyView, {
+    engine: { pug },
+    root: join(__dirname, '..', 'views'),
+  })
+}
+
+const setUpStaticAssets = (app) => {
+  app.register(fastifyStatic, {
+    root: join(__dirname, '..', 'public'),
+    prefix: '/',
+  })
+}
+
+// --- Request lifecycle hooks ---
+const addHooks = (app) => {
   // HTML forms only support GET and POST.
-  // This hook reads _method from the form body and rewrites request.method
-  // so PATCH /users/:id and DELETE /users/:id work from a plain HTML form.
+  // Reads _method from form body so PATCH/DELETE work from plain forms.
   app.addHook('preHandler', async (request) => {
     if (request.body?._method) {
       request.method = request.body._method.toUpperCase()
     }
   })
 
-  await app.register(fastifyView, {
-    engine: { pug },
-    root: join(__dirname, '..', 'views'),
-  })
-
-  // Decorator: must be declared before routes so Fastify knows about the property
-  app.decorateRequest('currentUser', null)
-
-  // On every request: if the session has a userId, load the full user from DB.
-  // reply.locals is a special @fastify/view feature — anything set here gets
-  // automatically merged into the Pug template context. No need to pass currentUser
-  // in every reply.view() call!
+  // Make request.user available in Pug templates via reply.locals
+  // Passport populates request.user automatically via deserializeUser on each request
   app.addHook('preHandler', async (request, reply) => {
-    if (request.session?.userId) {
-      request.currentUser = await User.query().findById(request.session.userId)
-    }
     reply.locals = {
       ...reply.locals,
-      currentUser: request.currentUser,
+      currentUser: request.user,
+      isAuthenticated: request.isAuthenticated(),
       t: app.t,
     }
   })
+}
 
+// --- Route registration ---
+const addRoutes = (app) => {
   app.register(root)
   app.register(users)
   app.register(session)
+}
+
+// --- Main entry point — reads like a table of contents ---
+export default async (app, _options) => {
+  setupDatabase(app)
+  await registerPlugins(app)
+  setUpViews(app)
+  setUpStaticAssets(app)
+  app.decorate('t', i18next.t.bind(i18next))
+  addHooks(app)
+  addRoutes(app)
+
+  return app
 }
