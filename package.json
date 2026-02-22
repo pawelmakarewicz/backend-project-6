@@ -9,12 +9,15 @@
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
     "build:watch": "webpack --mode development --watch",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' NODE_ENV=test npx jest --forceExit"
   },
   "author": "Me",
   "license": "ISC",
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@fastify/formbody": "^8.0.2",
+    "@fastify/session": "^11.1.1",
     "@fastify/static": "^9.0.0",
     "@fastify/view": "^11.1.1",
     "@popperjs/core": "^2.11.8",
@@ -24,21 +27,32 @@
     "dotenv": "^17.3.1",
     "fastify": "^5.7.4",
     "fastify-cli": "^5.1.0",
+    "fastify-passport": "^0.6.0",
     "i18next": "^25.8.11",
     "knex": "^3.1.0",
     "objection": "^3.1.5",
+    "passport-local": "^1.0.0",
     "pg": "^8.18.0",
-    "pug": "^3.0.3"
+    "pug": "^3.0.3",
+    "qs": "^6.15.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@jest/globals": "^30.2.0",
     "@stylistic/eslint-plugin": "^5.7.1",
     "css-loader": "^7.1.4",
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^17.3.0",
+    "jest": "^30.2.0",
     "mini-css-extract-plugin": "^2.10.0",
     "webpack": "^5.105.2",
     "webpack-cli": "^6.0.1"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "__tests__/helpers/"
+    ]
   }
 }

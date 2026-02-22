@@ -1,4 +1,5 @@
 /node_modules/
 .env
 *.sqlite3
-.github/copilot-instructions.md
+.github
+.playwright-mcp

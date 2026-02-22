@@ -1,0 +1,16 @@
+{
+  "users": {
+    "existing": {
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test@example.com",
+      "password": "password123"
+    },
+    "new": {
+      "firstName": "New",
+      "lastName": "Person",
+      "email": "new@example.com",
+      "password": "newpass456"
+    }
+  }
+}
