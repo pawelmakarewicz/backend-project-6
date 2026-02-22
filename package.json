@@ -14,9 +14,11 @@
   "author": "Me",
   "license": "ISC",
   "dependencies": {
+    "@fastify/formbody": "^8.0.2",
     "@fastify/static": "^9.0.0",
     "@fastify/view": "^11.1.1",
     "@popperjs/core": "^2.11.8",
+    "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.6.2",
     "bootstrap": "^5.3.8",
     "dotenv": "^17.3.1",

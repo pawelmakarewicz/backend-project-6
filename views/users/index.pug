@@ -1,0 +1,29 @@
+extends ../layout/page.pug
+
+block content
+  main
+    .container.py-5
+      h1.display-4.fw-bold.mt-4 Пользователи
+
+      .table-responsive
+        table.table.table-borderless.table-striped.mt-5.bg-white
+          thead
+            tr
+              th ID
+              th Полное имя
+              th Email
+              th Дата создания
+              th Действия
+          tbody
+            each user in users
+              tr
+                td= user.id
+                td= `${user.firstName} ${user.lastName}`
+                td= user.email
+                td= new Date(user.createdAt).toLocaleString()
+                td
+                  .d-flex.flex-wrap
+                    a.btn.btn-primary.me-1(href=`/users/${user.id}/edit`) Изменить
+                    form(method='POST' action=`/users/${user.id}`)
+                      input(type='hidden' name='_method' value='DELETE')
+                      button.btn.btn-danger(type='submit') Удалить

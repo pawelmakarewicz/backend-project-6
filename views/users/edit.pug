@@ -1,0 +1,57 @@
+extends ../layout/page.pug
+
+block content
+  main
+    .container.py-5
+      .row.justify-content-center
+        .col-md-6
+          h1.display-4.fw-bold.mt-4 Изменение пользователя
+
+          // PATCH isn't supported by HTML forms — we fake it with _method hidden field
+          form(method='POST' action=`/users/${user.id}`)
+            input(type='hidden' name='_method' value='PATCH')
+
+            .mb-3
+              label.form-label(for='data_firstName') Имя
+              input#data_firstName.form-control(
+                type='text'
+                name='data[firstName]'
+                placeholder='Имя'
+                value=user.firstName || ''
+              )
+              if errors.firstName
+                .text-danger.mt-1= errors.firstName[0].message
+
+            .mb-3
+              label.form-label(for='data_lastName') Фамилия
+              input#data_lastName.form-control(
+                type='text'
+                name='data[lastName]'
+                placeholder='Фамилия'
+                value=user.lastName || ''
+              )
+              if errors.lastName
+                .text-danger.mt-1= errors.lastName[0].message
+
+            .mb-3
+              label.form-label(for='data_email') Email
+              input#data_email.form-control(
+                type='text'
+                name='data[email]'
+                placeholder='Email'
+                value=user.email || ''
+              )
+              if errors.email
+                .text-danger.mt-1= errors.email[0].message
+
+            .mb-3
+              label.form-label(for='data_password') Пароль
+              input#data_password.form-control(
+                type='password'
+                name='data[password]'
+                placeholder='Пароль'
+              )
+              if errors.password
+                .text-danger.mt-1= errors.password[0].message
+
+            input.btn.btn-primary(type='submit' value='Изменить')
