@@ -9,7 +9,7 @@ export default [
   js.configs.recommended,
   stylistic.configs.recommended,
   {
-    files: ['server/**/*.js', 'database/**/*.js', 'webpack.config.js'],
+    files: ['server/**/*.js', 'database/**/*.js', 'webpack.config.js', 'knexfile.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
