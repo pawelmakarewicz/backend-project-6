@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import i18next from 'i18next'
 import { User } from '../models/index.js'
 
@@ -16,13 +15,11 @@ export default async (app) => {
     const { data } = request.body
 
     try {
-      const passwordHash = await bcrypt.hash(data.password, 10)
-
       await User.query().insert({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
-        passwordHash,
+        password: data.password,
       })
 
       request.flash('success', i18next.t('flash.users.create.success'))
@@ -69,7 +66,7 @@ export default async (app) => {
       }
 
       if (data.password) {
-        patch.passwordHash = await bcrypt.hash(data.password, 10)
+        patch.password = data.password
       }
 
       await user.$query().patchAndFetch(patch)

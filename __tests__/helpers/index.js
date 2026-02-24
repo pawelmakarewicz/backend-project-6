@@ -20,11 +20,11 @@ export const prepareData = async (app) => {
   const knex = app.objection.knex
   const testData = getTestData()
 
-  const passwordHash = await bcrypt.hash(testData.users.existing.password, 10)
+  const passwordDigest = await bcrypt.hash(testData.users.existing.password, 10)
   await knex('users').insert({
     firstName: testData.users.existing.firstName,
     lastName: testData.users.existing.lastName,
     email: testData.users.existing.email,
-    passwordHash,
+    passwordDigest,
   })
 }
