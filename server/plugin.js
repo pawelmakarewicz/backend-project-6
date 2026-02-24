@@ -11,9 +11,7 @@ import i18next from './i18n.js'
 import knexConfig from '../knexfile.js'
 import models from './models/index.js'
 import FormStrategy from './lib/passportStrategies/FormStrategy.js'
-import root from './routes/root.js'
-import users from './routes/users.js'
-import session from './routes/session.js'
+import addRoutes from './routes/index.js'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
@@ -36,9 +34,6 @@ const registerPlugins = async (app) => {
   // qs parser supports nested bracket syntax: data[firstName] → { data: { firstName: ... } }
   await app.register(fastifyFormbody, { parser: str => qs.parse(str) })
 
-  // Secure session: stores session data in an encrypted cookie (no server-side storage).
-  // secret = pre-generated 32-byte hex key from SESSION_KEY env variable.
-  // cookie path '/' = send session cookie on every route.
   await app.register(fastifySecureSession, {
     secret: process.env.SESSION_KEY,
     cookie: {
@@ -51,17 +46,13 @@ const registerPlugins = async (app) => {
   await app.register(fastifyPassport.initialize())
   await app.register(fastifyPassport.secureSession())
 
-  // deserializeUser: called on every request — given the stored user data, load the full user
   fastifyPassport.registerUserDeserializer(
     user => app.objection.models.user.query().findById(user.id),
   )
-  // serializeUser: called once on login — what to save in the session cookie
   fastifyPassport.registerUserSerializer(user => Promise.resolve(user))
 
-  // Register our form-based strategy under the name 'form'
   fastifyPassport.use(new FormStrategy('form', app))
 
-  // Expose passport instance on app so routes can use app.passport.authenticate(...)
   app.decorate('passport', fastifyPassport)
 }
 
@@ -76,8 +67,6 @@ const setUpViews = (app) => {
     root: join(__dirname, 'views'),
   })
 
-  // Custom render method (same as boilerplate).
-  // Passes `reply` into every template so Pug can call reply.flash() directly.
   app.decorateReply('render', function render(viewPath, locals) {
     return this.view(viewPath, { ...locals, reply: this })
   })
@@ -101,19 +90,11 @@ const addHooks = (app) => {
   })
 
   // Make auth state available in Pug templates via reply.locals.
-  // Flash is NOT read here — templates call reply.flash() directly (see layout/page.pug).
   app.addHook('preHandler', async (req, reply) => {
     reply.locals = {
       isAuthenticated: () => req.isAuthenticated(),
     }
   })
-}
-
-// --- Route registration ---
-const addRoutes = (app) => {
-  app.register(root)
-  app.register(users)
-  app.register(session)
 }
 
 // --- Main entry point — reads like a table of contents ---
