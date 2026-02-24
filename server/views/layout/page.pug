@@ -1,0 +1,21 @@
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no')
+    title Hexlet Task Manager
+    script(src='/assets/main.js')
+    link(href='/assets/main.css' rel='stylesheet')
+  body
+    include header.pug
+    .container.mt-3
+      - const flash = reply ? reply.flash() : {}
+      if flash && flash.error
+        each msg in flash.error
+          .alert.alert-danger= msg
+      if flash && flash.success
+        each msg in flash.success
+          .alert.alert-success= msg
+      if flash && flash.info
+        each msg in flash.info
+          .alert.alert-info= msg
+    block content

@@ -1,18 +1,18 @@
 nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
   .container
-    a.navbar-brand(href='/') Менеджер задач
+    a.navbar-brand(href='/') #{t('appName')}
     ul.navbar-nav.me-auto
       li.nav-item
-        a.nav-link(href='/users') Пользователи
+        a.nav-link(href='/users') #{t('layouts.application.users')}
       //- These links only appear when logged in (future steps: statuses, labels, tasks)
     ul.navbar-nav
-      if currentUser
+      if isAuthenticated()
         li.nav-item
           form.d-inline(method='POST' action='/session')
             input(type='hidden' name='_method' value='delete')
-            input.btn.nav-link(type='submit' value='Выход')
+            input.btn.nav-link(type='submit' value=t('layouts.application.signOut'))
       else
         li.nav-item
-          a.nav-link(href='/session/new') Вход
+          a.nav-link(href='/session/new') #{t('layouts.application.signIn')}
         li.nav-item
-          a.nav-link(href='/users/new') Регистрация
+          a.nav-link(href='/users/new') #{t('layouts.application.signUp')}

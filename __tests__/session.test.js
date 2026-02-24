@@ -40,7 +40,7 @@ describe('session (auth)', () => {
     expect(response.statusCode).toBe(302)
     expect(response.headers.location).toBe('/')
 
-    const sessionCookie = response.cookies.find(c => c.name === 'sessionId')
+    const sessionCookie = response.cookies.find(c => c.name === 'session')
     expect(sessionCookie).toBeDefined()
   })
 
@@ -53,8 +53,8 @@ describe('session (auth)', () => {
       },
     })
 
-    expect(response.statusCode).toBe(200)
-    expect(response.body).toContain('data[email]')
+    expect(response.statusCode).toBe(302)
+    expect(response.headers.location).toBe('/session/new')
   })
 
   it('POST /session — unknown email → re-renders form', async () => {
@@ -66,7 +66,8 @@ describe('session (auth)', () => {
       },
     })
 
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toBe(302)
+    expect(response.headers.location).toBe('/session/new')
   })
 
   it('DELETE /session — logout → redirect', async () => {

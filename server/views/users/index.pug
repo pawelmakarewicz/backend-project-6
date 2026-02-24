@@ -3,17 +3,17 @@ extends ../layout/page.pug
 block content
   main
     .container.py-5
-      h1.display-4.fw-bold.mt-4 Пользователи
+      h1.display-4.fw-bold.mt-4 #{t('layouts.application.users')}
 
       .table-responsive
         table.table.table-borderless.table-striped.mt-5.bg-white
           thead
             tr
-              th ID
-              th Полное имя
-              th Email
-              th Дата создания
-              th Действия
+              th #{t('views.users.id')}
+              th #{t('views.users.fullName')}
+              th #{t('views.users.email')}
+              th #{t('views.users.createdAt')}
+              th #{t('views.users.actions')}
           tbody
             each user in users
               tr
@@ -23,7 +23,7 @@ block content
                 td= new Date(user.createdAt).toLocaleString()
                 td
                   .d-flex.flex-wrap
-                    a.btn.btn-primary.me-1(href=`/users/${user.id}/edit`) Изменить
+                    a.btn.btn-primary.me-1(href=`/users/${user.id}/edit`) #{t('views.users.edit.submit')}
                     form(method='POST' action=`/users/${user.id}`)
                       input(type='hidden' name='_method' value='DELETE')
-                      button.btn.btn-danger(type='submit') Удалить
+                      button.btn.btn-danger(type='submit') #{t('views.users.delete')}

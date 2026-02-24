@@ -1,14 +1,15 @@
 import bcrypt from 'bcrypt'
-import User from '../models/User.js'
+import i18next from 'i18next'
+import { User } from '../models/index.js'
 
 export default async (app) => {
   app.get('/users', async (request, reply) => {
     const users = await User.query()
-    return reply.view('users/index.pug', { users })
+    return reply.render('users/index', { users })
   })
 
   app.get('/users/new', async (request, reply) => {
-    return reply.view('users/new.pug', { user: {}, errors: {} })
+    return reply.render('users/new', { user: {}, errors: {} })
   })
 
   app.post('/users', async (request, reply) => {
@@ -24,11 +25,13 @@ export default async (app) => {
         passwordHash,
       })
 
+      request.flash('success', i18next.t('flash.users.create.success'))
       return reply.redirect('/')
     }
     catch (error) {
       const errors = error.data ?? {}
-      return reply.view('users/new.pug', { user: data, errors })
+      request.flash('error', i18next.t('flash.users.create.error'))
+      return reply.render('users/new', { user: data, errors })
     }
   })
 
@@ -42,7 +45,7 @@ export default async (app) => {
     if (!user) {
       return reply.code(404).send('User not found')
     }
-    return reply.view('users/edit.pug', { user, errors: {} })
+    return reply.render('users/edit', { user, errors: {} })
   })
 
   // PATCH /users/:id — update user (only the user themselves)
@@ -75,7 +78,7 @@ export default async (app) => {
     }
     catch (error) {
       const errors = error.data ?? {}
-      return reply.view('users/edit.pug', { user: { ...user, ...data }, errors })
+      return reply.render('users/edit', { user: { ...user, ...data }, errors })
     }
   })
 

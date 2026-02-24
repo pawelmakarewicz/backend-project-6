@@ -5,10 +5,7 @@ block content
     .container.py-5
       .row.justify-content-center
         .col-md-6
-          h1.mb-4 Вход
-
-          if error
-            .alert.alert-danger Wrong email or password
+          h1.mb-4 #{t('views.session.new.signIn')}
 
           form(method='POST' action='/session')
             .mb-3
@@ -27,4 +24,4 @@ block content
                 placeholder='Пароль'
               )
 
-            input.btn.btn-primary(type='submit' value='Войти')
+            input.btn.btn-primary(type='submit' value=t('views.session.new.submit'))

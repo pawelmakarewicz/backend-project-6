@@ -5,7 +5,7 @@ block content
     .container.py-5
       .row.justify-content-center
         .col-md-6
-          h1.mb-4 Регистрация
+          h1.mb-4 #{t('views.users.new.signUp')}
 
           form(method='POST' action='/users')
             .mb-3
@@ -51,4 +51,4 @@ block content
               if errors.password
                 .text-danger.mt-1= errors.password[0].message
 
-            input.btn.btn-primary(type='submit' value='Сохранить')
+            input.btn.btn-primary(type='submit' value=t('views.users.new.submit'))

@@ -2,8 +2,7 @@ import qs from 'qs'
 import fastifyView from '@fastify/view'
 import fastifyStatic from '@fastify/static'
 import fastifyFormbody from '@fastify/formbody'
-import fastifyCookie from '@fastify/cookie'
-import fastifySession from '@fastify/session'
+import fastifySecureSession from '@fastify/secure-session'
 import fastifyPassport from '@fastify/passport'
 import pug from 'pug'
 import Knex from 'knex'
@@ -32,33 +31,35 @@ const setupDatabase = (app) => {
   })
 }
 
-// --- Fastify plugins (form parsing, cookies, sessions, passport) ---
+// --- Fastify plugins (form parsing, secure session, passport) ---
 const registerPlugins = async (app) => {
   // qs parser supports nested bracket syntax: data[firstName] → { data: { firstName: ... } }
   await app.register(fastifyFormbody, { parser: str => qs.parse(str) })
-  await app.register(fastifyCookie)
 
-  const isProduction = process.env.NODE_ENV === 'production'
-  await app.register(fastifySession, {
-    secret: process.env.SESSION_SECRET || 'a-very-long-secret-key-at-least-32-chars!!',
-    cookie: { secure: isProduction }, // HTTPS-only in production, HTTP allowed in dev
+  // Secure session: stores session data in an encrypted cookie (no server-side storage).
+  // Same library as the Hexlet boilerplate. Requires a secret (≥32 chars) + salt (16 chars).
+  await app.register(fastifySecureSession, {
+    secret: process.env.SESSION_KEY || 'a-]very-long-secret-key-at-least-32-chars!!',
+    salt: 'mq9hDxBVDbspDR6n',
+    cookie: {
+      path: '/',
+    },
   })
 
-  // Passport: initialize + connect to session (reads/writes session on each request)
+  // Passport: initialize + connect to secure session
+  // @fastify/passport with secureSession() provides request.flash() and reply.flash() built-in
   await app.register(fastifyPassport.initialize())
   await app.register(fastifyPassport.secureSession())
 
-  // serializeUser: called once on login — what to save in the session?
-  // We only store the user ID, not the entire user object.
-  fastifyPassport.registerUserSerializer(async user => user.id)
-
-  // deserializeUser: called on every request — given the ID from session, load the full user
-  fastifyPassport.registerUserDeserializer(async (id) => {
-    return app.objection.models.user.query().findById(id)
-  })
+  // deserializeUser: called on every request — given the stored user data, load the full user
+  fastifyPassport.registerUserDeserializer(
+    user => app.objection.models.user.query().findById(user.id),
+  )
+  // serializeUser: called once on login — what to save in the session cookie
+  fastifyPassport.registerUserSerializer(user => Promise.resolve(user))
 
   // Register our form-based strategy under the name 'form'
-  fastifyPassport.use('form', new FormStrategy('form', app))
+  fastifyPassport.use(new FormStrategy('form', app))
 
   // Expose passport instance on app so routes can use app.passport.authenticate(...)
   app.decorate('passport', fastifyPassport)
@@ -67,7 +68,18 @@ const registerPlugins = async (app) => {
 const setUpViews = (app) => {
   app.register(fastifyView, {
     engine: { pug },
-    root: join(__dirname, '..', 'views'),
+    includeViewExtension: true,
+    defaultContext: {
+      t: key => i18next.t(key),
+      assetPath: filename => `/assets/${filename}`,
+    },
+    root: join(__dirname, 'views'),
+  })
+
+  // Custom render method (same as boilerplate).
+  // Passes `reply` into every template so Pug can call reply.flash() directly.
+  app.decorateReply('render', function render(viewPath, locals) {
+    return this.view(viewPath, { ...locals, reply: this })
   })
 }
 
@@ -88,14 +100,11 @@ const addHooks = (app) => {
     }
   })
 
-  // Make request.user available in Pug templates via reply.locals
-  // Passport populates request.user automatically via deserializeUser on each request
-  app.addHook('preHandler', async (request, reply) => {
+  // Make auth state available in Pug templates via reply.locals.
+  // Flash is NOT read here — templates call reply.flash() directly (see layout/page.pug).
+  app.addHook('preHandler', async (req, reply) => {
     reply.locals = {
-      ...reply.locals,
-      currentUser: request.user,
-      isAuthenticated: request.isAuthenticated(),
-      t: app.t,
+      isAuthenticated: () => req.isAuthenticated(),
     }
   })
 }
@@ -113,7 +122,6 @@ export default async (app, _options) => {
   await registerPlugins(app)
   setUpViews(app)
   setUpStaticAssets(app)
-  app.decorate('t', i18next.t.bind(i18next))
   addHooks(app)
   addRoutes(app)
 

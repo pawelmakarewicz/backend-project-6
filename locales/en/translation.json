@@ -1,15 +1,66 @@
 {
-  "nav": {
-    "home": "Home",
-    "features": "Features",
-    "pricing": "Pricing",
-    "faqs": "FAQs",
-    "about": "About",
-    "login": "Login",
-    "signup": "Sign up"
+  "appName": "Task Manager",
+  "flash": {
+    "session": {
+      "create": {
+        "success": "Вы залогинены",
+        "error": "Неверный email или пароль"
+      },
+      "delete": {
+        "success": "Вы разлогинены"
+      }
+    },
+    "users": {
+      "create": {
+        "error": "Не удалось зарегистрировать",
+        "success": "Пользователь успешно зарегистрирован"
+      },
+      "edit": {
+        "error": "Не удалось изменить пользователя",
+        "success": "Пользователь успешно изменён"
+      },
+      "delete": {
+        "success": "Пользователь успешно удалён"
+      }
+    },
+    "authError": "Доступ запрещён! Пожалуйста, авторизуйтесь."
   },
-  "welcome": {
-    "title": "Welcome to My App",
-    "subtitle": "A simple app built with Fastify, Pug and Bootstrap."
+  "layouts": {
+    "application": {
+      "users": "Пользователи",
+      "signIn": "Вход",
+      "signUp": "Регистрация",
+      "signOut": "Выход"
+    }
+  },
+  "views": {
+    "session": {
+      "new": {
+        "signIn": "Вход",
+        "submit": "Войти"
+      }
+    },
+    "users": {
+      "id": "ID",
+      "fullName": "Полное имя",
+      "email": "Email",
+      "createdAt": "Дата создания",
+      "actions": "Действия",
+      "new": {
+        "submit": "Сохранить",
+        "signUp": "Регистрация"
+      },
+      "edit": {
+        "title": "Изменение пользователя",
+        "submit": "Изменить"
+      },
+      "delete": "Удалить"
+    },
+    "welcome": {
+      "index": {
+        "hello": "Менеджер задач",
+        "description": "Практический курс по разработке на Fastify"
+      }
+    }
   }
 }

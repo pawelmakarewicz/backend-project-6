@@ -15,11 +15,9 @@
   "author": "Me",
   "license": "ISC",
   "dependencies": {
-    "@fastify/cookie": "^11.0.2",
-    "@fastify/flash": "^6.0.3",
     "@fastify/formbody": "^8.0.2",
     "@fastify/passport": "^3.0.2",
-    "@fastify/session": "^11.1.1",
+    "@fastify/secure-session": "^8.3.0",
     "@fastify/static": "^9.0.0",
     "@fastify/view": "^11.1.1",
     "@popperjs/core": "^2.11.8",
