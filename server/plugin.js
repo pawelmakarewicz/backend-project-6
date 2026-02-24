@@ -37,10 +37,10 @@ const registerPlugins = async (app) => {
   await app.register(fastifyFormbody, { parser: str => qs.parse(str) })
 
   // Secure session: stores session data in an encrypted cookie (no server-side storage).
-  // Same library as the Hexlet boilerplate. Requires a secret (≥32 chars) + salt (16 chars).
+  // secret = pre-generated 32-byte hex key from SESSION_KEY env variable.
+  // cookie path '/' = send session cookie on every route.
   await app.register(fastifySecureSession, {
-    secret: process.env.SESSION_KEY || 'a-]very-long-secret-key-at-least-32-chars!!',
-    salt: 'mq9hDxBVDbspDR6n',
+    secret: process.env.SESSION_KEY,
     cookie: {
       path: '/',
     },
