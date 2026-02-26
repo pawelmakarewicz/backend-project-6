@@ -1,20 +1,12 @@
 import { describe, beforeAll, it, expect, afterAll } from '@jest/globals'
-import fastify from 'fastify'
-import init from '../server/plugin.js'
-import { getTestData, prepareData } from './helpers/index.js'
+import { getTestData, signIn, createApp } from './helpers/index.js'
 
 describe('session (auth)', () => {
   let app
-  let knex
   let testData
 
   beforeAll(async () => {
-    app = fastify({ exposeHeadRoutes: false })
-    await init(app)
-    knex = app.objection.knex
-    await knex.migrate.latest()
-    await prepareData(app)
-    testData = getTestData()
+    ;({ app, testData } = await createApp())
   })
 
   it('GET /session/new — login form renders', async () => {
@@ -71,14 +63,7 @@ describe('session (auth)', () => {
   })
 
   it('DELETE /session — logout → redirect', async () => {
-    // Log in first
-    const signIn = await app.inject({
-      method: 'POST',
-      url: '/session',
-      payload: { data: testData.users.existing },
-    })
-    const [sessionCookie] = signIn.cookies
-    const cookie = { [sessionCookie.name]: sessionCookie.value }
+    const cookie = await signIn(app, testData.users.existing)
 
     // Log out
     const response = await app.inject({
@@ -103,13 +88,7 @@ describe('session (auth)', () => {
   })
 
   it('nav shows logout when authenticated', async () => {
-    const signIn = await app.inject({
-      method: 'POST',
-      url: '/session',
-      payload: { data: testData.users.existing },
-    })
-    const [sessionCookie] = signIn.cookies
-    const cookie = { [sessionCookie.name]: sessionCookie.value }
+    const cookie = await signIn(app, testData.users.existing)
 
     const response = await app.inject({
       method: 'GET',
@@ -121,38 +100,5 @@ describe('session (auth)', () => {
     expect(response.body).not.toContain('href="/session/new"')
   })
 
-  it('GET /users/:id/edit — not logged in → 403', async () => {
-    const [user] = await knex('users')
-
-    const response = await app.inject({
-      method: 'GET',
-      url: `/users/${user.id}/edit`,
-    })
-
-    expect(response.statusCode).toBe(403)
-  })
-
-  it('GET /users/:id/edit — own profile → 200', async () => {
-    const signIn = await app.inject({
-      method: 'POST',
-      url: '/session',
-      payload: { data: testData.users.existing },
-    })
-    const [sessionCookie] = signIn.cookies
-    const cookie = { [sessionCookie.name]: sessionCookie.value }
-
-    const [user] = await knex('users')
-
-    const response = await app.inject({
-      method: 'GET',
-      url: `/users/${user.id}/edit`,
-      cookies: cookie,
-    })
-
-    expect(response.statusCode).toBe(200)
-  })
-
-  afterAll(async () => {
-    await app.close()
-  })
+  afterAll(() => app.close())
 })

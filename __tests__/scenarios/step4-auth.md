@@ -22,13 +22,14 @@
 ## Scenario 3: Failed login — wrong password
 - **Precondition:** user registered with email `test@example.com`
 - **Request:** `POST /session` with body `data[email]=test@example.com&data[password]=wrongpass`
-- **Expected status:** 200 (re-renders the form, does NOT redirect)
-- **Expected body:** login form is shown again
+- **Expected status:** 302 (PRG pattern — redirect back to login form)
+- **Expected redirect:** `/session/new`
+- **Note:** flash error message is set in session and rendered on the redirected GET
 
 ## Scenario 4: Failed login — non-existent email
 - **Request:** `POST /session` with body `data[email]=nobody@example.com&data[password]=anything`
-- **Expected status:** 200
-- **Expected body:** login form is shown again
+- **Expected status:** 302 (PRG pattern — redirect back to login form)
+- **Expected redirect:** `/session/new`
 
 ## Scenario 5: Logout
 - **Precondition:** user is logged in (session cookie from Scenario 2)
