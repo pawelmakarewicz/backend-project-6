@@ -22,8 +22,9 @@ const setupDatabase = (app) => {
   const env = process.env.NODE_ENV || 'development'
   const knex = Knex(knexConfig[env])
   Model.knex(knex)
-  // Expose knex and models on app — tests use knex, strategies use models
-  app.decorate('objection', { knex, models })
+  // Convert [User, Task, ...] → { user: User, task: Task, ... } via class name
+  const modelsMap = Object.fromEntries(models.map(M => [M.name.toLowerCase(), M]))
+  app.decorate('objection', { knex, models: modelsMap })
   app.addHook('onClose', async () => {
     await knex.destroy()
   })

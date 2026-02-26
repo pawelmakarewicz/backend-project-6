@@ -1,9 +1,8 @@
 import i18next from 'i18next'
-import { User } from '../models/index.js'
 
 export default async (app) => {
   app.get('/users', async (request, reply) => {
-    const users = await User.query()
+    const users = await app.objection.models.user.query()
     return reply.render('users/index', { users })
   })
 
@@ -15,7 +14,7 @@ export default async (app) => {
     const { data } = request.body
 
     try {
-      await User.query().insert({
+      await app.objection.models.user.query().insert({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
@@ -38,7 +37,7 @@ export default async (app) => {
       return reply.code(403).redirect('/users')
     }
 
-    const user = await User.query().findById(request.params.id)
+    const user = await app.objection.models.user.query().findById(request.params.id)
     if (!user) {
       return reply.code(404).send('User not found')
     }
@@ -51,7 +50,7 @@ export default async (app) => {
       return reply.code(403).redirect('/users')
     }
 
-    const user = await User.query().findById(request.params.id)
+    const user = await app.objection.models.user.query().findById(request.params.id)
     if (!user) {
       return reply.code(404).send('User not found')
     }
@@ -85,7 +84,7 @@ export default async (app) => {
       return reply.code(403).redirect('/users')
     }
 
-    await User.query().deleteById(request.params.id)
+    await app.objection.models.user.query().deleteById(request.params.id)
     await request.logOut()
     return reply.redirect('/users')
   })

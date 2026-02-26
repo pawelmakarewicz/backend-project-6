@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt'
 // that 'email' is unique across the table
 const unique = objectionUnique({ fields: ['email'] })
 
-export class User extends unique(Model) {
+class User extends unique(Model) {
   static get tableName() {
     return 'users'
   }
@@ -37,3 +37,5 @@ export class User extends unique(Model) {
     return bcrypt.compare(password, this.passwordDigest)
   }
 }
+
+export default User
